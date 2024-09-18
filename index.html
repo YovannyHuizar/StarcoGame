@@ -6,6 +6,21 @@
     <title>Unity Web Player | ArcoMinigames</title>
     <link rel="shortcut icon" href="TemplateData/favicon.ico">
     <link rel="stylesheet" href="TemplateData/style.css">
+    <style>
+      #portrait-warning {
+        display: none; /* Ocultar por defecto */
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 1000; /* Asegurarse de que la imagen esté por encima del canvas */
+      }
+      @media (orientation: portrait) {
+        #portrait-warning {
+          display: block; /* Mostrar solo en portrait */
+        }
+      }
+    </style>
   </head>
   <body>
     <div id="unity-container" class="unity-desktop">
@@ -16,42 +31,19 @@
           <div id="unity-progress-bar-full"></div>
         </div>
       </div>
-      <div id="unity-warning"> </div>
+      <div id="unity-warning"></div>
       <div id="unity-footer">
         <div id="unity-logo-title-footer"></div>
         <div id="unity-fullscreen-button"></div>
         <div id="unity-build-title">ArcoMinigames</div>
       </div>
     </div>
+
+    <!-- Imagen que aparecerá en modo portrait -->
+    <img  id="portrait-warning" src="ArcoGame.png">
     <script>
       var canvas = document.querySelector("#unity-canvas");
 
-      // Shows a temporary message banner/ribbon for a few seconds, or
-      // a permanent error message on top of the canvas if type=='error'.
-      // If type=='warning', a yellow highlight color is used.
-      // Modify or remove this function to customize the visually presented
-      // way that non-critical warnings and error messages are presented to the
-      // user.
-
-       function checkO() {
-        if (window.innerWidth < window.innerHeight) {
-            // Si está en portrait, mostramos un mensaje para que roten el dispositivo
-            document.getElementById('orientation-message').style.display = 'block';
-            document.getElementById('unity-container').style.display = 'none';
-        } else {
-            // Si está en landscape, mostramos el juego
-            document.getElementById('orientation-message').style.display = 'none';
-            document.getElementById('unity-container').style.display = 'block';
-        }
-    }
-
-   
-
-      
-    window.addEventListener('resize', checkOrientation);
-    window.addEventListener('load', checkOrientation);
-    window.addEventListener('resize', checkO);
-    window.addEventListener('load', checkO);
       function unityShowBanner(msg, type) {
         var warningBanner = document.querySelector("#unity-warning");
         function updateBannerVisibility() {
@@ -85,30 +77,14 @@
         showBanner: unityShowBanner,
       };
 
-      // By default, Unity keeps WebGL canvas render target size matched with
-      // the DOM size of the canvas element (scaled by window.devicePixelRatio)
-      // Set this to false if you want to decouple this synchronization from
-      // happening inside the engine, and you would instead like to size up
-      // the canvas DOM size and WebGL render target sizes yourself.
-      // config.matchWebGLToCanvasSize = false;
-
       if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
-        // Mobile device style: fill the whole browser client area with the game canvas:
-
         var meta = document.createElement('meta');
         meta.name = 'viewport';
         meta.content = 'width=device-width, height=device-height, initial-scale=1.0, user-scalable=no, shrink-to-fit=yes';
         document.getElementsByTagName('head')[0].appendChild(meta);
         document.querySelector("#unity-container").className = "unity-mobile";
         canvas.className = "unity-mobile";
-
-        // To lower canvas resolution on mobile devices to gain some
-        // performance, uncomment the following line:
-        // config.devicePixelRatio = 1;
-
-
       } else {
-        // Desktop style: Render the game canvas in a window that can be maximized to fullscreen:
         canvas.style.width = "960px";
         canvas.style.height = "600px";
       }
@@ -120,18 +96,23 @@
       script.onload = () => {
         createUnityInstance(canvas, config, (progress) => {
           document.querySelector("#unity-progress-bar-full").style.width = 100 * progress + "%";
-              }).then((unityInstance) => {
-                document.querySelector("#unity-loading-bar").style.display = "none";
-                document.querySelector("#unity-fullscreen-button").onclick = () => {
-                  unityInstance.SetFullscreen(1);
-                };
-
-              }).catch((message) => {
-                alert(message);
-              });
-            };
+        }).then((unityInstance) => {
+          document.querySelector("#unity-loading-bar").style.display = "none";
+          document.querySelector("#unity-fullscreen-button").onclick = () => {
+            unityInstance.SetFullscreen(1);
+          };
+        }).catch((message) => {
+          alert(message);
+        });
+      };
 
       document.body.appendChild(script);
+
+      // JavaScript para actualizar la visibilidad de la imagen si cambia la orientación
+      window.addEventListener("resize", function() {
+        var orientation = (window.innerWidth > window.innerHeight) ? "landscape" : "portrait";
+        document.getElementById("portrait-warning").style.display = orientation === "portrait" ? "block" : "none";
+      });
 
     </script>
   </body>
