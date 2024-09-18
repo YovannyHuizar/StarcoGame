@@ -6,23 +6,15 @@
     <title>Unity Web Player | ArcoMinigames</title>
     <link rel="shortcut icon" href="TemplateData/favicon.ico">
     <link rel="stylesheet" href="TemplateData/style.css">
-    <style>
-      #portrait-warning {
-        display: none; /* Ocultar por defecto */
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        z-index: 1000; /* Asegurarse de que la imagen esté por encima del canvas */
-      }
-      @media (orientation: portrait) {
-        #portrait-warning {
-          display: block; /* Mostrar solo en portrait */
-        }
-      }
-    </style>
   </head>
   <body>
+    <!-- Mensaje de orientación -->
+    <div id="orientation-message" style="display:none; text-align:center; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background-color: #000;">
+      <img src="ArcoGame.png" alt="Por favor, gira tu dispositivo" style="max-width: 100%; height: auto;">
+      <p style="color:white;">Por favor, gira tu dispositivo para jugar en modo horizontal (landscape).</p>
+    </div>
+
+    <!-- Contenedor principal de Unity -->
     <div id="unity-container" class="unity-desktop">
       <canvas id="unity-canvas" width=960 height=600 tabindex="-1"></canvas>
       <div id="unity-loading-bar">
@@ -39,80 +31,70 @@
       </div>
     </div>
 
-    <!-- Imagen que aparecerá en modo portrait -->
-    <img  id="portrait-warning" src="ArcoGame.png">
     <script>
       var canvas = document.querySelector("#unity-canvas");
+      var unityInstance = null;  // Para guardar la instancia de Unity
 
-      function unityShowBanner(msg, type) {
-        var warningBanner = document.querySelector("#unity-warning");
-        function updateBannerVisibility() {
-          warningBanner.style.display = warningBanner.children.length ? 'block' : 'none';
+      // Función para verificar la orientación y ajustar la pantalla
+      function checkOrientation() {
+        if (window.innerWidth < window.innerHeight) {
+          // Si está en portrait, mostramos el mensaje y ocultamos el juego
+          document.getElementById('orientation-message').style.display = 'block';
+          document.getElementById('unity-container').style.display = 'none';
+        } else {
+          // Si está en landscape, mostramos el juego y redimensionamos el canvas
+          document.getElementById('orientation-message').style.display = 'none';
+          document.getElementById('unity-container').style.display = 'block';
+
+          resizeCanvas();  // Ajustar el canvas
+
+          if (!unityInstance) {
+            loadUnity();  // Cargar Unity solo si estamos en landscape
+          }
         }
-        var div = document.createElement('div');
-        div.innerHTML = msg;
-        warningBanner.appendChild(div);
-        if (type == 'error') div.style = 'background: red; padding: 10px;';
-        else {
-          if (type == 'warning') div.style = 'background: yellow; padding: 10px;';
-          setTimeout(function() {
-            warningBanner.removeChild(div);
-            updateBannerVisibility();
-          }, 5000);
-        }
-        updateBannerVisibility();
       }
 
-      var buildUrl = "Build";
-      var loaderUrl = buildUrl + "/WebBuild2.loader.js";
-      var config = {
-        arguments: [],
-        dataUrl: buildUrl + "/WebBuild2.data.unityweb",
-        frameworkUrl: buildUrl + "/WebBuild2.framework.js.unityweb",
-        codeUrl: buildUrl + "/WebBuild2.wasm.unityweb",
-        streamingAssetsUrl: "StreamingAssets",
-        companyName: "DefaultCompany",
-        productName: "ArcoMinigames",
-        productVersion: "0.1",
-        showBanner: unityShowBanner,
-      };
-
-      if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
-        var meta = document.createElement('meta');
-        meta.name = 'viewport';
-        meta.content = 'width=device-width, height=device-height, initial-scale=1.0, user-scalable=no, shrink-to-fit=yes';
-        document.getElementsByTagName('head')[0].appendChild(meta);
-        document.querySelector("#unity-container").className = "unity-mobile";
-        canvas.className = "unity-mobile";
-      } else {
-        canvas.style.width = "960px";
-        canvas.style.height = "600px";
+      // Función que ajusta el tamaño del canvas
+      function resizeCanvas() {
+        canvas.style.width = window.innerWidth + "px";
+        canvas.style.height = window.innerHeight + "px";
       }
 
-      document.querySelector("#unity-loading-bar").style.display = "block";
+      // Cargar Unity solo si la orientación es landscape
+      function loadUnity() {
+        var buildUrl = "Build";
+        var loaderUrl = buildUrl + "/WebBuild2.loader.js";
+        var config = {
+          dataUrl: buildUrl + "/WebBuild2.data.unityweb",
+          frameworkUrl: buildUrl + "/WebBuild2.framework.js.unityweb",
+          codeUrl: buildUrl + "/WebBuild2.wasm.unityweb",
+          streamingAssetsUrl: "StreamingAssets",
+          companyName: "DefaultCompany",
+          productName: "ArcoMinigames",
+          productVersion: "0.1",
+        };
 
-      var script = document.createElement("script");
-      script.src = loaderUrl;
-      script.onload = () => {
-        createUnityInstance(canvas, config, (progress) => {
-          document.querySelector("#unity-progress-bar-full").style.width = 100 * progress + "%";
-        }).then((unityInstance) => {
-          document.querySelector("#unity-loading-bar").style.display = "none";
-          document.querySelector("#unity-fullscreen-button").onclick = () => {
-            unityInstance.SetFullscreen(1);
-          };
-        }).catch((message) => {
-          alert(message);
-        });
-      };
+        var script = document.createElement("script");
+        script.src = loaderUrl;
+        script.onload = () => {
+          createUnityInstance(canvas, config, (progress) => {
+            document.querySelector("#unity-progress-bar-full").style.width = 100 * progress + "%";
+          }).then((instance) => {
+            unityInstance = instance;  // Guardar la instancia
+            document.querySelector("#unity-loading-bar").style.display = "none";
+            document.querySelector("#unity-fullscreen-button").onclick = () => {
+              unityInstance.SetFullscreen(1);
+            };
+          }).catch((message) => {
+            alert(message);
+          });
+        };
+        document.body.appendChild(script);
+      }
 
-      document.body.appendChild(script);
-
-      // JavaScript para actualizar la visibilidad de la imagen si cambia la orientación
-      window.addEventListener("resize", function() {
-        var orientation = (window.innerWidth > window.innerHeight) ? "landscape" : "portrait";
-        document.getElementById("portrait-warning").style.display = orientation === "portrait" ? "block" : "none";
-      });
+      // Agregar listeners para cambios de orientación
+      window.addEventListener('resize', checkOrientation);
+      window.addEventListener('load', checkOrientation);
 
     </script>
   </body>
