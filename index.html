@@ -8,12 +8,6 @@
     <link rel="stylesheet" href="TemplateData/style.css">
   </head>
   <body>
-    <!-- Mensaje de orientación -->
-    <div id="orientation-message" style="display:none; text-align:center; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background-color: #000;">
-      <img src="ArcoGame.png" alt="Por favor, gira tu dispositivo" style="max-width: 100%; height: auto;">
-    </div>
-
-    <!-- Contenedor principal de Unity -->
     <div id="unity-container" class="unity-desktop">
       <canvas id="unity-canvas" width=960 height=600 tabindex="-1"></canvas>
       <div id="unity-loading-bar">
@@ -22,78 +16,102 @@
           <div id="unity-progress-bar-full"></div>
         </div>
       </div>
-      <div id="unity-warning"></div>
+      <div id="unity-warning"> </div>
       <div id="unity-footer">
         <div id="unity-logo-title-footer"></div>
         <div id="unity-fullscreen-button"></div>
         <div id="unity-build-title">ArcoMinigames</div>
       </div>
     </div>
-
     <script>
       var canvas = document.querySelector("#unity-canvas");
-      var unityInstance = null;  // Para guardar la instancia de Unity
 
-      // Función para verificar la orientación y ajustar la pantalla
-      function checkOrientation() {
-        if (window.innerWidth < window.innerHeight) {
-          // Si está en portrait, mostramos el mensaje y ocultamos el juego
-          document.getElementById('orientation-message').style.display = 'block';
-          document.getElementById('unity-container').style.display = 'none';
-        } else {
-          // Si está en landscape, mostramos el juego y redimensionamos el canvas
-          document.getElementById('orientation-message').style.display = 'none';
-          document.getElementById('unity-container').style.display = 'block';
-
-          resizeCanvas();  // Ajustar el canvas
-
-          if (!unityInstance) {
-            loadUnity();  // Cargar Unity solo si estamos en landscape
-          }
+      // Shows a temporary message banner/ribbon for a few seconds, or
+      // a permanent error message on top of the canvas if type=='error'.
+      // If type=='warning', a yellow highlight color is used.
+      // Modify or remove this function to customize the visually presented
+      // way that non-critical warnings and error messages are presented to the
+      // user.
+      function unityShowBanner(msg, type) {
+        var warningBanner = document.querySelector("#unity-warning");
+        function updateBannerVisibility() {
+          warningBanner.style.display = warningBanner.children.length ? 'block' : 'none';
         }
+        var div = document.createElement('div');
+        div.innerHTML = msg;
+        warningBanner.appendChild(div);
+        if (type == 'error') div.style = 'background: red; padding: 10px;';
+        else {
+          if (type == 'warning') div.style = 'background: yellow; padding: 10px;';
+          setTimeout(function() {
+            warningBanner.removeChild(div);
+            updateBannerVisibility();
+          }, 5000);
+        }
+        updateBannerVisibility();
       }
 
-      // Función que ajusta el tamaño del canvas
-      function resizeCanvas() {
-        canvas.style.width = window.innerWidth + "px";
-        canvas.style.height = window.innerHeight + "px";
+      var buildUrl = "Build";
+      var loaderUrl = buildUrl + "/WebBuild2.loader.js";
+      var config = {
+        arguments: [],
+        dataUrl: buildUrl + "/WebBuild2.data.unityweb",
+        frameworkUrl: buildUrl + "/WebBuild2.framework.js.unityweb",
+        codeUrl: buildUrl + "/WebBuild2.wasm.unityweb",
+        streamingAssetsUrl: "StreamingAssets",
+        companyName: "DefaultCompany",
+        productName: "ArcoMinigames",
+        productVersion: "0.1",
+        showBanner: unityShowBanner,
+      };
+
+      // By default, Unity keeps WebGL canvas render target size matched with
+      // the DOM size of the canvas element (scaled by window.devicePixelRatio)
+      // Set this to false if you want to decouple this synchronization from
+      // happening inside the engine, and you would instead like to size up
+      // the canvas DOM size and WebGL render target sizes yourself.
+      // config.matchWebGLToCanvasSize = false;
+
+      if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+        // Mobile device style: fill the whole browser client area with the game canvas:
+
+        var meta = document.createElement('meta');
+        meta.name = 'viewport';
+        meta.content = 'width=device-width, height=device-height, initial-scale=1.0, user-scalable=no, shrink-to-fit=yes';
+        document.getElementsByTagName('head')[0].appendChild(meta);
+        document.querySelector("#unity-container").className = "unity-mobile";
+        canvas.className = "unity-mobile";
+
+        // To lower canvas resolution on mobile devices to gain some
+        // performance, uncomment the following line:
+        // config.devicePixelRatio = 1;
+
+
+      } else {
+        // Desktop style: Render the game canvas in a window that can be maximized to fullscreen:
+        canvas.style.width = "960px";
+        canvas.style.height = "600px";
       }
 
-      // Cargar Unity solo si la orientación es landscape
-      function loadUnity() {
-        var buildUrl = "Build";
-        var loaderUrl = buildUrl + "/WebBuild2.loader.js";
-        var config = {
-          dataUrl: buildUrl + "/WebBuild2.data.unityweb",
-          frameworkUrl: buildUrl + "/WebBuild2.framework.js.unityweb",
-          codeUrl: buildUrl + "/WebBuild2.wasm.unityweb",
-          streamingAssetsUrl: "StreamingAssets",
-          companyName: "DefaultCompany",
-          productName: "ArcoMinigames",
-          productVersion: "0.1",
-        };
+      document.querySelector("#unity-loading-bar").style.display = "block";
 
-        var script = document.createElement("script");
-        script.src = loaderUrl;
-        script.onload = () => {
-          createUnityInstance(canvas, config, (progress) => {
-            document.querySelector("#unity-progress-bar-full").style.width = 100 * progress + "%";
-          }).then((instance) => {
-            unityInstance = instance;  // Guardar la instancia
-            document.querySelector("#unity-loading-bar").style.display = "none";
-            document.querySelector("#unity-fullscreen-button").onclick = () => {
-              unityInstance.SetFullscreen(1);
+      var script = document.createElement("script");
+      script.src = loaderUrl;
+      script.onload = () => {
+        createUnityInstance(canvas, config, (progress) => {
+          document.querySelector("#unity-progress-bar-full").style.width = 100 * progress + "%";
+              }).then((unityInstance) => {
+                document.querySelector("#unity-loading-bar").style.display = "none";
+                document.querySelector("#unity-fullscreen-button").onclick = () => {
+                  unityInstance.SetFullscreen(1);
+                };
+
+              }).catch((message) => {
+                alert(message);
+              });
             };
-          }).catch((message) => {
-            alert(message);
-          });
-        };
-        document.body.appendChild(script);
-      }
 
-      // Agregar listeners para cambios de orientación
-      window.addEventListener('resize', checkOrientation);
-      window.addEventListener('load', checkOrientation);
+      document.body.appendChild(script);
 
     </script>
   </body>
