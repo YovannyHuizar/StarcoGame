@@ -10,7 +10,7 @@
   <body>
     <!-- Mensaje de orientación -->
     <div id="orientation-message" style="display:none; text-align:center; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background-color: #000;">
-      <img src="ArcoGame.png" alt="Por favor, gira tu dispositivo" style="max-width: 100%; height: auto;">
+      <img src="ArcoGame.png" style="max-width: 100%; height: auto;">
     </div>
 
     <!-- Contenedor principal de Unity -->
@@ -122,7 +122,7 @@
         canvas.className = "unity-mobile";
 
         // Para reducir la resolución en dispositivos móviles y ganar rendimiento, descomenta la siguiente línea:
-        // config.devicePixelRatio = 1;
+         config.devicePixelRatio = 1;
 
       } else {
         // Estilo para escritorio: tamaño fijo para el canvas
@@ -147,6 +147,7 @@
         }).catch((message) => {
           alert(message);
         });
+        checkOrientation();
       };
 
       document.body.appendChild(script);
