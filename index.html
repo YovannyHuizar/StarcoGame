@@ -64,7 +64,7 @@
           document.getElementById('orientation-message').style.display = 'none';
           document.getElementById('unity-container').style.display = 'block';
           resizeCanvas(); // Ajustamos el canvas cuando cambiamos a landscape
-          
+
           if (unityInstance) {
             // Asegurarse de que el canvas de Unity también se ajuste
             canvas.width = window.innerWidth;
@@ -77,7 +77,10 @@
 
       // Agregar listeners para cuando la ventana se redimensione o cargue
       window.addEventListener('resize', checkOrientation);
-      window.addEventListener('load', checkOrientation);
+      window.addEventListener('load', () => {
+        checkOrientation();
+        resizeCanvas();
+      });
 
       // Mostrar advertencias en el juego
       function unityShowBanner(msg, type) {
@@ -145,6 +148,7 @@
           document.querySelector("#unity-fullscreen-button").onclick = () => {
             unityInstance.SetFullscreen(1);
           };
+          resizeCanvas(); // Asegurarse de ajustar el canvas inmediatamente después de cargar Unity
         }).catch((message) => {
           alert(message);
         });
