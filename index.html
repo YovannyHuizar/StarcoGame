@@ -32,15 +32,26 @@
 
     <!-- Script para manejar la orientación -->
     <script>
+      var unityInstance = null;  // Guardar la instancia de Unity
+      var canvas = document.querySelector("#unity-canvas");
+
       function checkOrientation() {
         if (window.innerWidth < window.innerHeight) {
           // Si está en portrait, mostramos un mensaje para que roten el dispositivo
           document.getElementById('orientation-message').style.display = 'block';
           document.getElementById('unity-container').style.display = 'none';
         } else {
-          // Si está en landscape, mostramos el juego
+          // Si está en landscape, mostramos el juego y redimensionamos el canvas
           document.getElementById('orientation-message').style.display = 'none';
           document.getElementById('unity-container').style.display = 'block';
+
+          if (unityInstance) {
+            // Redibujar el canvas al cambiar de orientación
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            unityInstance.Module.canvas.style.width = window.innerWidth + "px";
+            unityInstance.Module.canvas.style.height = window.innerHeight + "px";
+          }
         }
       }
 
@@ -107,7 +118,8 @@
       script.onload = () => {
         createUnityInstance(canvas, config, (progress) => {
           document.querySelector("#unity-progress-bar-full").style.width = 100 * progress + "%";
-        }).then((unityInstance) => {
+        }).then((instance) => {
+          unityInstance = instance;  // Guardar la instancia
           document.querySelector("#unity-loading-bar").style.display = "none";
           document.querySelector("#unity-fullscreen-button").onclick = () => {
             unityInstance.SetFullscreen(1);
