@@ -9,13 +9,13 @@
   </head>
   <body>
     <!-- Mensaje de orientación -->
-    <div id="orientation-message" style="display:none; text-align:center;  width: 100vw; height: 100vh; background-color: #000;">
+    <div id="orientation-message" style="display:none; text-align:center; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background-color: #000;">
       <img src="ArcoGame.png" alt="Por favor, gira tu dispositivo" style="max-width: 100%; height: auto;">
-      
+      <p style="color: #fff;">Por favor, gira tu dispositivo para jugar en modo horizontal (landscape).</p>
     </div>
 
     <!-- Contenedor principal de Unity -->
-    <div id="unity-container" class="unity-desktop" style="display:none;">
+    <div id="unity-container" class="unity-desktop">
       <canvas id="unity-canvas" width="960" height="600" tabindex="-1"></canvas>
       <div id="unity-loading-bar">
         <div id="unity-logo"></div>
@@ -31,11 +31,10 @@
       </div>
     </div>
 
-    <!-- Script para manejar la orientación y cargar Unity -->
+    <!-- Script para manejar la orientación -->
     <script>
       var unityInstance = null;  // Guardar la instancia de Unity
       var canvas = document.querySelector("#unity-canvas");
-      var unityLoaded = false; // Bandera para saber si Unity ya ha sido cargado
 
       // Función que ajusta el canvas según el modo (portrait/landscape)
       function resizeCanvas() {
@@ -65,49 +64,15 @@
           document.getElementById('orientation-message').style.display = 'none';
           document.getElementById('unity-container').style.display = 'block';
           resizeCanvas(); // Ajustamos el canvas cuando cambiamos a landscape
-
-          if (!unityLoaded) {
-            loadUnity(); // Cargar Unity solo si no se ha cargado aún
+          
+          if (unityInstance) {
+            // Asegurarse de que el canvas de Unity también se ajuste
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            unityInstance.Module.canvas.style.width = window.innerWidth + "px";
+            unityInstance.Module.canvas.style.height = window.innerHeight + "px";
           }
         }
-      }
-
-      // Función para cargar Unity
-      function loadUnity() {
-        unityLoaded = true; // Marcar que Unity ya está cargado
-        var buildUrl = "Build";
-        var loaderUrl = buildUrl + "/WebBuild2.loader.js";
-        var config = {
-          arguments: [],
-          dataUrl: buildUrl + "/WebBuild2.data.unityweb",
-          frameworkUrl: buildUrl + "/WebBuild2.framework.js.unityweb",
-          codeUrl: buildUrl + "/WebBuild2.wasm.unityweb",
-          streamingAssetsUrl: "StreamingAssets",
-          companyName: "DefaultCompany",
-          productName: "ArcoMinigames",
-          productVersion: "0.1",
-          showBanner: unityShowBanner,
-        };
-
-        // Cargar y crear la instancia de Unity
-        var script = document.createElement("script");
-        script.src = loaderUrl;
-        script.onload = () => {
-          createUnityInstance(canvas, config, (progress) => {
-            document.querySelector("#unity-progress-bar-full").style.width = 100 * progress + "%";
-          }).then((instance) => {
-            unityInstance = instance;  // Guardar la instancia
-            document.querySelector("#unity-loading-bar").style.display = "none";
-            document.querySelector("#unity-fullscreen-button").onclick = () => {
-              unityInstance.SetFullscreen(1);
-            };
-            resizeCanvas(); // Asegurarse de ajustar el canvas inmediatamente después de cargar Unity
-          }).catch((message) => {
-            alert(message);
-          });
-        };
-
-        document.body.appendChild(script);
       }
 
       // Agregar listeners para cuando la ventana se redimensione o cargue
@@ -133,6 +98,59 @@
         }
         updateBannerVisibility();
       }
+
+      var buildUrl = "Build";
+      var loaderUrl = buildUrl + "/WebBuild2.loader.js";
+      var config = {
+        arguments: [],
+        dataUrl: buildUrl + "/WebBuild2.data.unityweb",
+        frameworkUrl: buildUrl + "/WebBuild2.framework.js.unityweb",
+        codeUrl: buildUrl + "/WebBuild2.wasm.unityweb",
+        streamingAssetsUrl: "StreamingAssets",
+        companyName: "DefaultCompany",
+        productName: "ArcoMinigames",
+        productVersion: "0.1",
+        showBanner: unityShowBanner,
+      };
+
+      if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+        // Estilos para dispositivos móviles: llenamos toda el área del navegador
+        var meta = document.createElement('meta');
+        meta.name = 'viewport';
+        meta.content = 'width=device-width, height=device-height, initial-scale=1.0, user-scalable=no, shrink-to-fit=yes';
+        document.getElementsByTagName('head')[0].appendChild(meta);
+        document.querySelector("#unity-container").className = "unity-mobile";
+        canvas.className = "unity-mobile";
+
+        // Para reducir la resolución en dispositivos móviles y ganar rendimiento, descomenta la siguiente línea:
+        // config.devicePixelRatio = 1;
+
+      } else {
+        // Estilo para escritorio: tamaño fijo para el canvas
+        canvas.style.width = "960px";
+        canvas.style.height = "600px";
+      }
+
+      document.querySelector("#unity-loading-bar").style.display = "block";
+
+      // Cargar y crear la instancia de Unity
+      var script = document.createElement("script");
+      script.src = loaderUrl;
+      script.onload = () => {
+        createUnityInstance(canvas, config, (progress) => {
+          document.querySelector("#unity-progress-bar-full").style.width = 100 * progress + "%";
+        }).then((instance) => {
+          unityInstance = instance;  // Guardar la instancia
+          document.querySelector("#unity-loading-bar").style.display = "none";
+          document.querySelector("#unity-fullscreen-button").onclick = () => {
+            unityInstance.SetFullscreen(1);
+          };
+        }).catch((message) => {
+          alert(message);
+        });
+      };
+
+      document.body.appendChild(script);
 
     </script>
   </body>
