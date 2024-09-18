@@ -32,6 +32,26 @@
       // Modify or remove this function to customize the visually presented
       // way that non-critical warnings and error messages are presented to the
       // user.
+
+       function checkO() {
+        if (window.innerWidth < window.innerHeight) {
+            // Si está en portrait, mostramos un mensaje para que roten el dispositivo
+            document.getElementById('orientation-message').style.display = 'block';
+            document.getElementById('unity-container').style.display = 'none';
+        } else {
+            // Si está en landscape, mostramos el juego
+            document.getElementById('orientation-message').style.display = 'none';
+            document.getElementById('unity-container').style.display = 'block';
+        }
+    }
+
+   
+
+      
+    window.addEventListener('resize', checkOrientation);
+    window.addEventListener('load', checkOrientation);
+    window.addEventListener('resize', checkO);
+    window.addEventListener('load', checkO);
       function unityShowBanner(msg, type) {
         var warningBanner = document.querySelector("#unity-warning");
         function updateBannerVisibility() {
