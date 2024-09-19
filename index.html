@@ -27,6 +27,26 @@
       </div>
     </div>
     <script>
+    // Prevenir el zoom con el gesto "pinch" en dispositivos táctiles
+    document.addEventListener('touchmove', function(e) {
+        if (e.scale !== 1) { e.preventDefault(); }
+    }, { passive: false });
+
+    // Prevenir el doble toque para hacer zoom
+    document.addEventListener('dblclick', function(e) {
+        e.preventDefault();
+    });
+
+    // Prevenir el uso del gesto pinch para hacer zoom en dispositivos móviles
+    document.addEventListener('gesturestart', function(e) {
+        e.preventDefault();
+    });
+
+    // Prevenir el desplazamiento de la página con el touch en móviles
+    document.body.addEventListener('touchmove', function(e) {
+        e.preventDefault();
+    }, { passive: false });
+      
       var canvas = document.querySelector("#unity-canvas");
 
       // Shows a temporary message banner/ribbon for a few seconds, or
