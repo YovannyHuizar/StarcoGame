@@ -8,6 +8,10 @@
     <link rel="stylesheet" href="TemplateData/style.css">
   </head>
   <body>
+    <div id="orientation-message" style="display:none; text-align:center;">
+     <img src="ArcoGame.png" alt="Por favor, gira tu dispositivo" style="max-width: 100%; height: auto;">
+    <p>Por favor, gira tu dispositivo para jugar en modo horizontal (landscape).</p>
+    </div>
     <div id="unity-container" class="unity-desktop">
       <canvas id="unity-canvas" width=960 height=600 tabindex="-1"></canvas>
       <div id="unity-loading-bar">
@@ -32,6 +36,22 @@
       // Modify or remove this function to customize the visually presented
       // way that non-critical warnings and error messages are presented to the
       // user.
+
+  function checkOrientation() {
+        if (window.innerWidth < window.innerHeight) {
+            // Si está en portrait, mostramos un mensaje para que roten el dispositivo
+            document.getElementById('orientation-message').style.display = 'block';
+            document.getElementById('unity-container').style.display = 'none';
+        } else {
+            // Si está en landscape, mostramos el juego
+            document.getElementById('orientation-message').style.display = 'none';
+            document.getElementById('unity-container').style.display = 'block';
+        }
+    }
+
+    window.addEventListener('resize', checkOrientation);
+    window.addEventListener('load', checkOrientation);
+      
       function unityShowBanner(msg, type) {
         var warningBanner = document.querySelector("#unity-warning");
         function updateBannerVisibility() {
