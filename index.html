@@ -108,8 +108,11 @@
         updateBannerVisibility();
       }
 function loadUnity() {
-      var buildUrl = "Build";
      
+         
+      }
+ var buildUrl = "Build";
+     var loaderUrl = buildUrl + "/WebBuild2.loader.js";
       var config = {
         arguments: [],
         dataUrl: buildUrl + "/WebBuild2.data.unityweb",
@@ -120,9 +123,7 @@ function loadUnity() {
         productName: "ArcoMinigames",
         productVersion: "0.1",
         showBanner: unityShowBanner,
-         
       }
-var loaderUrl = buildUrl + "/WebBuild2.loader.js";
  var script = document.createElement("script");
       script.src = loaderUrl;
       script.onload = () => {
