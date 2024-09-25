@@ -107,9 +107,7 @@
         }
         updateBannerVisibility();
       }
-
-        function loadUnity() {
-             var buildUrl = "Build";
+     var buildUrl = "Build";
      var loaderUrl = buildUrl + "/WebBuild2.loader.js";
       var config = {
         arguments: [],
@@ -120,9 +118,9 @@
         companyName: "DefaultCompany",
         productName: "ArcoMinigames",
         productVersion: "0.1",
-        showBanner: unityShowBanner,
-      }
- var script = document.createElement("script");
+        showBanner: unityShowBanner,}
+      
+   var script = document.createElement("script");
       script.src = loaderUrl;
       script.onload = () => {
         createUnityInstance(canvas, config, (progress) => {
@@ -139,6 +137,26 @@
             };
       document.querySelector("#unity-loading-bar").style.display = "block";
       document.body.appendChild(script);
+
+
+        
+        
+        function loadUnity() {
+           script.onload = () => {
+        createUnityInstance(canvas, config, (progress) => {
+          document.querySelector("#unity-progress-bar-full").style.width = 100 * progress + "%";
+              }).then((unityInstance) => {
+                document.querySelector("#unity-loading-bar").style.display = "none";
+                document.querySelector("#unity-fullscreen-button").onclick = () => {
+                  unityInstance.SetFullscreen(1);
+                };
+
+              }).catch((message) => {
+                alert(message);
+              });
+            };
+      }
+
         }
 
 
