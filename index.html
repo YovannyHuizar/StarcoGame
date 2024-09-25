@@ -137,6 +137,8 @@
                 alert(message);
               });
             };
+      document.querySelector("#unity-loading-bar").style.display = "block";
+      document.body.appendChild(script);
         }
 
 
@@ -169,11 +171,7 @@
         canvas.style.height = "600px";
       }
 
-      document.querySelector("#unity-loading-bar").style.display = "block";
-
-
-
-      document.body.appendChild(script);
+  
 
     </script>
   </body>
