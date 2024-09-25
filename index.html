@@ -120,9 +120,7 @@ function loadUnity() {
         productName: "ArcoMinigames",
         productVersion: "0.1",
         showBanner: unityShowBanner,
-      }
-
-        var script = document.createElement("script");
+          var script = document.createElement("script");
       script.src = loaderUrl;
       script.onload = () => {
         createUnityInstance(canvas, config, (progress) => {
@@ -137,6 +135,9 @@ function loadUnity() {
                 alert(message);
               });
             };
+      }
+
+      
       };
 
       // By default, Unity keeps WebGL canvas render target size matched with
