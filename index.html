@@ -19,38 +19,19 @@
           <div id="unity-progress-bar-full"></div>
         </div>
       </div>
-      <div id="unity-warning"></div>
+      <div id="unity-warning"> </div>
       <div id="unity-footer">
         <div id="unity-logo-title-footer"></div>
         <div id="unity-fullscreen-button"></div>
         <div id="unity-build-title">ArcoMinigames</div>
       </div>
     </div>
+
     <script>
-      var canvas = document.querySelector("#unity-canvas");
-      var unityInstance = null;  // Guardar la instancia de Unity
+      var unityInstance = null;  // Para guardar la instancia de Unity
 
-      // Función para verificar la orientación y ajustar la pantalla
-      function checkOrientation() {
-        if (window.innerWidth < window.innerHeight) {
-          // Si está en portrait, mostramos el mensaje y la barra de carga
-          document.getElementById('orientation-message').style.display = 'block';
-          document.getElementById('unity-container').style.display = 'none';
-          document.querySelector("#unity-loading-bar").style.display = 'block';
-        } else {
-          // Si está en landscape, mostramos el juego y redimensionamos el canvas
-          document.getElementById('orientation-message').style.display = 'none';
-          document.getElementById('unity-container').style.display = 'block';
-          document.querySelector("#unity-loading-bar").style.display = 'block'; // Mantén la barra de carga visible hasta que Unity esté listo
-
-          if (!unityInstance) {
-            loadUnity();  // Cargar Unity solo si estamos en landscape
-          }
-        }
-      }
-
-      // Función para cargar Unity
       function loadUnity() {
+        var canvas = document.querySelector("#unity-canvas");
         var buildUrl = "Build";
         var loaderUrl = buildUrl + "/WebBuild2.loader.js";
         var config = {
@@ -71,7 +52,7 @@
           createUnityInstance(canvas, config, (progress) => {
             document.querySelector("#unity-progress-bar-full").style.width = 100 * progress + "%";
           }).then((instance) => {
-            unityInstance = instance;  // Guardar la instancia de Unity
+            unityInstance = instance;  // Guardar la instancia
             document.querySelector("#unity-loading-bar").style.display = "none";
             document.querySelector("#unity-fullscreen-button").onclick = () => {
               unityInstance.SetFullscreen(1);
@@ -80,31 +61,28 @@
             alert(message);
           });
         };
-
         document.body.appendChild(script);
       }
 
-      // Mostrar banners de advertencia y error
-      function unityShowBanner(msg, type) {
-        var warningBanner = document.querySelector("#unity-warning");
-        function updateBannerVisibility() {
-          warningBanner.style.display = warningBanner.children.length ? 'block' : 'none';
+      // Función para verificar la orientación
+      function checkOrientation() {
+        if (window.innerWidth < window.innerHeight) {
+          // Mostrar el mensaje y ocultar el contenedor del juego si está en portrait
+          document.getElementById('orientation-message').style.display = 'block';
+          document.getElementById('unity-container').style.display = 'none';
+        } else {
+          // Mostrar el juego si está en landscape
+          document.getElementById('orientation-message').style.display = 'none';
+          document.getElementById('unity-container').style.display = 'block';
+
+          // Cargar Unity solo si no está cargado
+          if (!unityInstance) {
+            loadUnity();
+          }
         }
-        var div = document.createElement('div');
-        div.innerHTML = msg;
-        warningBanner.appendChild(div);
-        if (type == 'error') div.style = 'background: red; padding: 10px;';
-        else {
-          if (type == 'warning') div.style = 'background: yellow; padding: 10px;';
-          setTimeout(function() {
-            warningBanner.removeChild(div);
-            updateBannerVisibility();
-          }, 5000);
-        }
-        updateBannerVisibility();
       }
 
-      // Eventos para verificar la orientación al cargar y redimensionar
+      // Verificar la orientación al cambiar el tamaño de la ventana o cargar la página
       window.addEventListener('resize', checkOrientation);
       window.addEventListener('load', checkOrientation);
 
@@ -127,6 +105,42 @@
       document.body.addEventListener('touchmove', function(e) {
         e.preventDefault();
       }, { passive: false });
+
+      // Mostrar una notificación o error en el banner de advertencias
+      function unityShowBanner(msg, type) {
+        var warningBanner = document.querySelector("#unity-warning");
+        function updateBannerVisibility() {
+          warningBanner.style.display = warningBanner.children.length ? 'block' : 'none';
+        }
+        var div = document.createElement('div');
+        div.innerHTML = msg;
+        warningBanner.appendChild(div);
+        if (type == 'error') div.style = 'background: red; padding: 10px;';
+        else {
+          if (type == 'warning') div.style = 'background: yellow; padding: 10px;';
+          setTimeout(function() {
+            warningBanner.removeChild(div);
+            updateBannerVisibility();
+          }, 5000);
+        }
+        updateBannerVisibility();
+      }
+
+      // Configuración para dispositivos móviles
+      if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+        var meta = document.createElement('meta');
+        meta.name = 'viewport';
+        meta.content = 'width=device-width, height=device-height, initial-scale=1.0, user-scalable=no, shrink-to-fit=yes';
+        document.getElementsByTagName('head')[0].appendChild(meta);
+        document.querySelector("#unity-container").className = "unity-mobile";
+        document.querySelector("#unity-canvas").className = "unity-mobile";
+      } else {
+        // Configuración para escritorio
+        document.querySelector("#unity-canvas").style.width = "960px";
+        document.querySelector("#unity-canvas").style.height = "600px";
+      }
+
+      document.querySelector("#unity-loading-bar").style.display = "block";
 
     </script>
   </body>
