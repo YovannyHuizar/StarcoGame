@@ -108,7 +108,8 @@
         updateBannerVisibility();
       }
 
- var buildUrl = "Build";
+        function loadUnity() {
+             var buildUrl = "Build";
      var loaderUrl = buildUrl + "/WebBuild2.loader.js";
       var config = {
         arguments: [],
@@ -136,6 +137,8 @@
                 alert(message);
               });
             };
+        }
+
 
 
       // By default, Unity keeps WebGL canvas render target size matched with
