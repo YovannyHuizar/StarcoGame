@@ -27,9 +27,8 @@
       </div>
     </div>
     <script>
-          var canvas = document.querySelector("#unity-canvas");
+      var canvas = document.querySelector("#unity-canvas");
       var unityInstance = null;  // Para guardar la instancia de Unity
-
       // Función para verificar la orientación y ajustar la pantalla
       function checkOrientation() {
         if (window.innerWidth < window.innerHeight) {
@@ -46,9 +45,6 @@
           }
         }
       }
-
-
-      
     // Prevenir el zoom con el gesto "pinch" en dispositivos táctiles
     document.addEventListener('touchmove', function(e) {
         if (e.scale !== 1) { e.preventDefault(); }
@@ -108,34 +104,39 @@
         updateBannerVisibility();
       }
 
- var buildUrl = "Build";
-     var loaderUrl = buildUrl + "/WebBuild2.loader.js";
-      var config = {
-        arguments: [],
-        dataUrl: buildUrl + "/WebBuild2.data.unityweb",
-        frameworkUrl: buildUrl + "/WebBuild2.framework.js.unityweb",
-        codeUrl: buildUrl + "/WebBuild2.wasm.unityweb",
-        streamingAssetsUrl: "StreamingAssets",
-        companyName: "DefaultCompany",
-        productName: "ArcoMinigames",
-        productVersion: "0.1",
-        showBanner: unityShowBanner,
-      }
- var script = document.createElement("script");
-      script.src = loaderUrl;
-      script.onload = () => {
-        createUnityInstance(canvas, config, (progress) => {
-          document.querySelector("#unity-progress-bar-full").style.width = 100 * progress + "%";
-              }).then((unityInstance) => {
-                document.querySelector("#unity-loading-bar").style.display = "none";
-                document.querySelector("#unity-fullscreen-button").onclick = () => {
-                  unityInstance.SetFullscreen(1);
-                };
+// Cargar Unity solo si la orientación es landscape
+      function loadUnity() {
+        var buildUrl = "Build";
+        var loaderUrl = buildUrl + "/WebBuild2.loader.js";
+        var config = {
+          dataUrl: buildUrl + "/WebBuild2.data.unityweb",
+          frameworkUrl: buildUrl + "/WebBuild2.framework.js.unityweb",
+          codeUrl: buildUrl + "/WebBuild2.wasm.unityweb",
+          streamingAssetsUrl: "StreamingAssets",
+          companyName: "DefaultCompany",
+          productName: "ArcoMinigames",
+          productVersion: "0.1",
+        };
 
-              }).catch((message) => {
-                alert(message);
-              });
+        var script = document.createElement("script");
+        script.src = loaderUrl;
+        script.onload = () => {
+          createUnityInstance(canvas, config, (progress) => {
+            document.querySelector("#unity-progress-bar-full").style.width = 100 * progress + "%";
+          }).then((instance) => {
+            unityInstance = instance;  // Guardar la instancia
+            document.querySelector("#unity-loading-bar").style.display = "none";
+            document.querySelector("#unity-fullscreen-button").onclick = () => {
+              unityInstance.SetFullscreen(1);
             };
+          }).catch((message) => {
+            alert(message);
+          });
+        };
+        document.body.appendChild(script);
+      }
+      window.addEventListener('load', checkOrientation);
+
 
 
       // By default, Unity keeps WebGL canvas render target size matched with
