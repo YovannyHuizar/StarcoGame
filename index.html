@@ -26,9 +26,29 @@
         <div id="unity-build-title">ArcoMinigames</div>
       </div>
     </div>
-    <script>
-      var canvas = document.querySelector("#unity-canvas");
-  
+<script>
+          var canvas = document.querySelector("#unity-canvas");
+      var unityInstance = null;  // Para guardar la instancia de Unity
+
+      // Función para verificar la orientación y ajustar la pantalla
+      function checkOrientation() {
+        if (window.innerWidth < window.innerHeight) {
+          // Si está en portrait, mostramos el mensaje y ocultamos el juego
+          document.getElementById('orientation-message').style.display = 'block';
+          document.getElementById('unity-container').style.display = 'none';
+        } else {
+          // Si está en landscape, mostramos el juego y redimensionamos el canvas
+          document.getElementById('orientation-message').style.display = 'none';
+          document.getElementById('unity-container').style.display = 'block';
+
+          if (!unityInstance) {
+            loadUnity();  // Cargar Unity solo si estamos en landscape
+          }
+        }
+      }
+
+
+      
     // Prevenir el zoom con el gesto "pinch" en dispositivos táctiles
     document.addEventListener('touchmove', function(e) {
         if (e.scale !== 1) { e.preventDefault(); }
@@ -54,7 +74,20 @@
       // way that non-critical warnings and error messages are presented to the
       // user.
 
+  function checkOrientation() {
+        if (window.innerWidth < window.innerHeight) {
+            // Si está en portrait, mostramos un mensaje para que roten el dispositivo
+            document.getElementById('orientation-message').style.display = 'block';
+            document.getElementById('unity-container').style.display = 'none';
+        } else {
+            // Si está en landscape, mostramos el juego
+            document.getElementById('orientation-message').style.display = 'none';
+            document.getElementById('unity-container').style.display = 'block';
+        }
+    }
 
+    window.addEventListener('resize', checkOrientation);
+    window.addEventListener('load', checkOrientation);
       
       function unityShowBanner(msg, type) {
         var warningBanner = document.querySelector("#unity-warning");
@@ -98,10 +131,11 @@
                 document.querySelector("#unity-fullscreen-button").onclick = () => {
                   unityInstance.SetFullscreen(1);
                 };
+
               }).catch((message) => {
                 alert(message);
               });
-
+            };
 
 
       // By default, Unity keeps WebGL canvas render target size matched with
