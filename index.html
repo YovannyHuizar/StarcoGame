@@ -159,7 +159,8 @@
             document.querySelector("#unity-fullscreen-button").onclick = () => {
               unityInstance.SetFullscreen(1);
             };
-           // resizeCanvas(); // Asegurar que el tamaño sea correcto al cargar
+           // Forzar la pantalla completa cuando se carga
+        unityInstance.SetFullscreen(1);
           }).catch((message) => {
             alert(message);
           });
