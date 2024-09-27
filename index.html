@@ -168,7 +168,9 @@
       }
 
     window.addEventListener('resize', checkOrientation);
-    window.addEventListener('load', checkOrientation);
+     window.addEventListener('load', () => {
+    setTimeout(checkOrientation, 100); // Verificar orientación tras 100ms
+  });
 
     </script>
   </body>
